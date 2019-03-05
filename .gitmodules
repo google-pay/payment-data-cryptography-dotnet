@@ -1,0 +1,3 @@
+[submodule "GooglePay.PaymentDataCryptography.Tests/wycheproof"]
+	path = GooglePay.PaymentDataCryptography.Tests/wycheproof
+	url = git@github.com:google/wycheproof.git
