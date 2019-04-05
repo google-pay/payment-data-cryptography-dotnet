@@ -25,9 +25,14 @@ using Org.BouncyCastle.Utilities.Encoders;
 
 namespace GooglePay.PaymentDataCryptography
 {
-    internal static class SignatureVerification
+    internal class SignatureVerification
     {
-        public static bool VerifyMessage(Models.PaymentData paymentData, string sender, string recipient, ISignatureKeyProvider keyProvider)
+        private readonly Util.IClock _clock = Util.SystemClock.Default;
+
+        public SignatureVerification() {}
+        internal SignatureVerification(Util.IClock mockClock) => _clock = mockClock;
+
+        public bool VerifyMessage(Models.PaymentData paymentData, string sender, string recipient, ISignatureKeyProvider keyProvider)
         {
             string protocolVersion = paymentData.ProtocolVersion;
             byte[] signedString = CreateSignedString(sender, recipient, paymentData.ProtocolVersion, paymentData.SignedMessage);
@@ -36,7 +41,7 @@ namespace GooglePay.PaymentDataCryptography
             var keys = keyProvider.GetPublicKeys(protocolVersion).Result;
             if (keys == null)
             {
-                throw new SecurityException($"No signing keys found for protocol version {paymentData.ProtocolVersion}");
+                throw new SecurityException($"No valid signing keys found for protocol version {paymentData.ProtocolVersion}");
             }
             switch (protocolVersion)
             {
@@ -49,10 +54,10 @@ namespace GooglePay.PaymentDataCryptography
             }
         }
 
-        private static bool VerifyMessageECv1(IEnumerable<string> keys, byte[] signedString, byte[] signature) =>
+        private bool VerifyMessageECv1(IEnumerable<string> keys, byte[] signedString, byte[] signature) =>
             keys.Any(keyData => VerifySignature(KeyParser.ParsePublicKeyDer(keyData), signedString, signature));
 
-        private static bool VerifyMessageECv2(IEnumerable<string> keys, byte[] signedString, byte[] signature, Models.SigningKey intermediateSigningKey)
+        private bool VerifyMessageECv2(IEnumerable<string> keys, byte[] signedString, byte[] signature, Models.SigningKey intermediateSigningKey)
         {
             if (!intermediateSigningKey.Signatures.Any(intermediateSignature =>
             {
@@ -64,8 +69,8 @@ namespace GooglePay.PaymentDataCryptography
                 throw new SecurityException("No valid signing keys found in payload");
             }
 
-            Models.KeyWithExpiration signedKey = Json.Parse<Models.KeyWithExpiration>(intermediateSigningKey.SignedKey);
-            if (!signedKey.Valid())
+            Models.KeyWithExpiration signedKey = Util.Json.Parse<Models.KeyWithExpiration>(intermediateSigningKey.SignedKey);
+            if (!signedKey.Valid(_clock))
             {
                 throw new SecurityException("Expired signed key found in payload");
             }

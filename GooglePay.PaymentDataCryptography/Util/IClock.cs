@@ -13,18 +13,23 @@
 // limitations under the License.
 
 using System;
-using System.Runtime.Serialization;
 
-namespace GooglePay.PaymentDataCryptography.Models
+namespace GooglePay.PaymentDataCryptography.Util
 {
-    [DataContract]
-    internal class KeyWithExpiration
+    internal interface IClock
     {
-        [DataMember(Name = "keyExpiration")]
-        internal long KeyExpiration { get; set; }
-        [DataMember(Name = "keyValue")]
-        internal string KeyValue { get; set; }
+        DateTime UtcNow { get; }
+    }
 
-        internal bool Valid() => DateTimeOffset.FromUnixTimeMilliseconds(KeyExpiration) <= DateTimeOffset.UtcNow;
+    /// <summary>
+    /// A default IClock implementation that wraps <see cref="System.DateTime.UtcNow"/>.
+    /// </summary>
+    internal class SystemClock : IClock
+    {
+        protected SystemClock() { }
+
+        public static readonly IClock Default = new SystemClock();
+
+        public DateTime UtcNow => DateTime.UtcNow;
     }
 }

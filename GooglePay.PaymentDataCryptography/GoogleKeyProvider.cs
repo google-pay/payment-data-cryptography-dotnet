@@ -36,6 +36,7 @@ namespace GooglePay.PaymentDataCryptography
         private const string GoogleProductionKeyUrl = "https://payments.developers.google.com/paymentmethodtoken/keys.json";
         private const string GoogleTestKeyUrl = "https://payments.developers.google.com/paymentmethodtoken/test/keys.json";
 
+        private readonly Util.IClock _clock = Util.SystemClock.Default;
         private readonly string _url;
         private readonly object _lock = new object();
         private Task<KeysDict> _googleKeysTask = null;
@@ -48,7 +49,10 @@ namespace GooglePay.PaymentDataCryptography
         public GoogleKeyProvider(bool isTest = false) =>
             _url = isTest ? GoogleTestKeyUrl : GoogleProductionKeyUrl;
 
-        internal GoogleKeyProvider(string testData) => _testData = testData;
+        internal GoogleKeyProvider(string testData, Util.IClock mockClock) {
+            _testData = testData;
+            _clock = mockClock;
+        }
 
         /// <summary>
         /// Returns one or more Google signing keys associated with the given
@@ -118,21 +122,21 @@ namespace GooglePay.PaymentDataCryptography
                     _updateTimeSpan = response.Headers.CacheControl.MaxAge.Value;
                 }
                 Stream json = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-                var keys = Json.Parse<GoogleKeysObject>(json);
+                var keys = Util.Json.Parse<GoogleKeysObject>(json);
                 return ParseGoogleKeys(keys);
             }
         }
 
         private KeysDict FetchGoogleKeysTest()
         {
-            var keys = Json.Parse<GoogleKeysObject>(_testData);
+            var keys = Util.Json.Parse<GoogleKeysObject>(_testData);
             return ParseGoogleKeys(keys);
         }
 
-        private static KeysDict ParseGoogleKeys(GoogleKeysObject keys)
+        private KeysDict ParseGoogleKeys(GoogleKeysObject keys)
         {
             return keys.Keys
-                .Where(key => key.Valid())
+                .Where(key => key.Valid(_clock))
                 .GroupBy(key => key.ProtocolVersion)
                 .ToDictionary(key => key.Key, key => key.Select(x => x.KeyValue));
         }
@@ -158,7 +162,7 @@ namespace GooglePay.PaymentDataCryptography
             [DataMember(Name = "keyExpiration")]
             internal long KeyExpiration { get; set; }
 
-            internal bool Valid() => KeyExpiration == 0 || DateTimeOffset.FromUnixTimeMilliseconds(KeyExpiration) <= DateTimeOffset.UtcNow;
+            internal bool Valid(Util.IClock clock) => KeyExpiration == 0 || DateTimeOffset.FromUnixTimeMilliseconds(KeyExpiration) >= clock.UtcNow;
         }
 
     }
