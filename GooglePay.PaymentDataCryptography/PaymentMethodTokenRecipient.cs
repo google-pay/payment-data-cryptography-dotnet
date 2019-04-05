@@ -42,6 +42,7 @@ namespace GooglePay.PaymentDataCryptography
 
         private readonly string _recipientId;
         private readonly ISignatureKeyProvider _signatureKeyProvider;
+        private readonly SignatureVerification _signatureVerification = new SignatureVerification();
 
         private List<ECPrivateKeyParameters> _privateKeys = new List<ECPrivateKeyParameters>();
 
@@ -51,6 +52,13 @@ namespace GooglePay.PaymentDataCryptography
         {
             _recipientId = recipientId;
             _signatureKeyProvider = signatureKeyProvider;
+        }
+
+        internal PaymentMethodTokenRecipient(string recipientId, ISignatureKeyProvider signatureKeyProvider, Util.IClock clock)
+        {
+            _recipientId = recipientId;
+            _signatureKeyProvider = signatureKeyProvider;
+            _signatureVerification = new SignatureVerification(clock);
         }
 
         /// <summary>
@@ -95,8 +103,8 @@ namespace GooglePay.PaymentDataCryptography
             {
                 throw new InvalidOperationException("At least one private key must be added");
             }
-            PaymentData paymentData = Json.Parse<PaymentData>(sealedMessage);
-            SignedMessage signedMessage = Json.Parse<SignedMessage>(paymentData.SignedMessage);
+            PaymentData paymentData = Util.Json.Parse<PaymentData>(sealedMessage);
+            SignedMessage signedMessage = Util.Json.Parse<SignedMessage>(paymentData.SignedMessage);
             KeyDerivation keyDerivation;
 
             switch (paymentData.ProtocolVersion)
@@ -111,7 +119,7 @@ namespace GooglePay.PaymentDataCryptography
                     throw new SecurityException($"Unsupported protocol version {paymentData.ProtocolVersion}");
             }
 
-            if (!SignatureVerification.VerifyMessage(paymentData, GoogleSenderId, _recipientId, _signatureKeyProvider))
+            if (!_signatureVerification.VerifyMessage(paymentData, GoogleSenderId, _recipientId, _signatureKeyProvider))
             {
                 throw new SecurityException("Cannot verify signature");
             }
