@@ -21,7 +21,7 @@ namespace GooglePay.PaymentDataCryptography.Tests
 {
     public class SignatureVerificationTest
     {
-        private const long _mockTimestamp = 1542319793000;
+        private const long _mockTimestamp = 1542233393000;
         private readonly Util.IClock _clock = new MockClock(_mockTimestamp);
 
         [Fact]
