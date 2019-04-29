@@ -31,7 +31,7 @@ namespace GooglePay.PaymentDataCryptography.Tests
 {
     public class WycheproofTest
     {
-        private const string TestDataFilePath = "./testdata/ecdh_secp256r1_test.json";
+        private const string TestDataFilePath = "./wycheproof/testvectors/ecdh_secp256r1_test.json";
 
         [Theory]
         [MemberData(nameof(WycheproofTestData))]

@@ -16,9 +16,12 @@
     <ProjectReference Include="..\GooglePay.PaymentDataCryptography\GooglePay.PaymentDataCryptography.csproj">
       <Name>GooglePay.PaymentDataCryptography</Name>
     </ProjectReference>
-    <Content Include="testdata\*.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="wycheproof\testvectors\ecdh_secp256r1_test.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>
