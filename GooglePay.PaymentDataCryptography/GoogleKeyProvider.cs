@@ -19,6 +19,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Runtime.Serialization;
+using System.Threading;
 using System.Threading.Tasks;
 
 using Org.BouncyCastle.Utilities.Encoders;
@@ -38,7 +39,7 @@ namespace GooglePay.PaymentDataCryptography
 
         private readonly Util.IClock _clock = Util.SystemClock.Default;
         private readonly string _url;
-        private readonly object _lock = new object();
+        private readonly SemaphoreSlim _semaphoreSlim = new SemaphoreSlim(1, 1);
         private Task<KeysDict> _googleKeysTask = null;
         private KeysDict _googleKeys = null;
         private DateTime _lastUpdate;
@@ -63,13 +64,18 @@ namespace GooglePay.PaymentDataCryptography
         public async Task<IEnumerable<string>> GetPublicKeys(string protocolVersion)
         {
             await FetchKeysIfNeeded().ConfigureAwait(false);
-            lock (_lock)
+            await _semaphoreSlim.WaitAsync();
+            try
             {
                 if (!_googleKeys.ContainsKey(protocolVersion))
                 {
                     return null;
                 }
                 return _googleKeys[protocolVersion];
+            }
+            finally
+            {
+                _semaphoreSlim.Release();
             }
         }
 
@@ -82,7 +88,8 @@ namespace GooglePay.PaymentDataCryptography
 
         private Task FetchKeysIfNeeded(bool force = false)
         {
-            lock (_lock)
+            _semaphoreSlim.Wait();
+            try
             {
                 if (!NeedsUpdate())
                 {
@@ -94,15 +101,24 @@ namespace GooglePay.PaymentDataCryptography
                 }
                 _googleKeysTask = FetchGoogleKeys();
             }
+            finally
+            {
+                _semaphoreSlim.Release();
+            }
             return WaitForKeys();
             async Task WaitForKeys()
             {
-                KeysDict keys = await _googleKeysTask.ConfigureAwait(false);
-                lock (_lock)
+                await _semaphoreSlim.WaitAsync();
+                try
                 {
+                    KeysDict keys = await _googleKeysTask.ConfigureAwait(false);
                     _googleKeysTask = null;
                     _googleKeys = keys;
                     _lastUpdate = DateTime.UtcNow;
+                }
+                finally
+                {
+                    _semaphoreSlim.Release();
                 }
             }
         }
