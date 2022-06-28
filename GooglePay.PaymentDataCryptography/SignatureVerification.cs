@@ -99,7 +99,6 @@ namespace GooglePay.PaymentDataCryptography
             }
             ECPublicKeyParameters signingKey = KeyParser.ParsePublicKeyDer(signedKey.KeyValue);
             return VerifySignature(signingKey, signedString, signature);
-            return VerifySignature(signingKey, signedString, signature);
         }
 
         private static bool VerifySignature(ECPublicKeyParameters key, byte[] signedString, byte[] signature)
