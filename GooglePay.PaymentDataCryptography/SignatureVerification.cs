@@ -25,7 +25,7 @@ using Org.BouncyCastle.Utilities.Encoders;
 
 namespace GooglePay.PaymentDataCryptography
 {
-    public class SignatureVerification
+    internal class SignatureVerification
     {
         private readonly Util.IClock _clock = Util.SystemClock.Default;
 
