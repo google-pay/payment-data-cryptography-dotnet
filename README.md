@@ -24,7 +24,7 @@ string decryptedMessage = parser.Unseal(encryptedMessage);
 ### Validate Pass callbacks:
 ```csharp
 var passCallbackValidator = new PassCallbackValidator();
-var innerMessage = passCallbackValidator.Validate("YOUR_ISSUER_ID", receivedCallbackMessage);
+var innerMessage = passCallbackValidator.Verify("YOUR_ISSUER_ID", receivedCallbackMessage);
 ```
 
 ## Disclaimer
