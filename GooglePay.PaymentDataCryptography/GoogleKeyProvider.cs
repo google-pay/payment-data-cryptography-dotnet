@@ -34,9 +34,8 @@ namespace GooglePay.PaymentDataCryptography
     /// </summary>
     public class GoogleKeyProvider : ISignatureKeyProvider
     {
-        public const string GoogleProductionKeyUrl = "https://payments.developers.google.com/paymentmethodtoken/keys.json";
-        public const string GoogleTestKeyUrl = "https://payments.developers.google.com/paymentmethodtoken/test/keys.json";
-        public const string GooglePassesUrl = "https://pay.google.com/gp/m/issuer/keys";
+        private const string GoogleProductionKeyUrl = "https://payments.developers.google.com/paymentmethodtoken/keys.json";
+        private const string GoogleTestKeyUrl = "https://payments.developers.google.com/paymentmethodtoken/test/keys.json";
 
         private readonly Util.IClock _clock = Util.SystemClock.Default;
         private readonly string _url;
@@ -48,13 +47,8 @@ namespace GooglePay.PaymentDataCryptography
 
         private readonly string _testData = null;
 
-        /// <summary>
-        /// Use the GoogleProductionKeyUrl or GoogleTestKeyUrl or GooglePassesUrl constants from this class
-        /// based on the environment and keys you require.
-        /// </summary>
-        /// <param name="url"></param>
-        public GoogleKeyProvider(string url) =>
-            _url = url;
+        public GoogleKeyProvider(bool isTest = false) =>
+            _url = isTest ? GoogleTestKeyUrl : GoogleProductionKeyUrl;
 
         internal GoogleKeyProvider(string testData, Util.IClock mockClock) {
             _testData = testData;

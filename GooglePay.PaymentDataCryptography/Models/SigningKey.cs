@@ -17,11 +17,11 @@ using System.Runtime.Serialization;
 namespace GooglePay.PaymentDataCryptography.Models
 {
     [DataContract]
-    public class SigningKey
+    internal class SigningKey
     {
         [DataMember(Name = "signedKey")]
-        public string SignedKey { get; set; }
+        internal string SignedKey { get; set; }
         [DataMember(Name = "signatures")]
-        public string[] Signatures { get; set; }
+        internal string[] Signatures { get; set; }
     }
 }

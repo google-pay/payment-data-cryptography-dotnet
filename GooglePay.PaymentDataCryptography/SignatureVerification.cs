@@ -25,7 +25,7 @@ using Org.BouncyCastle.Utilities.Encoders;
 
 namespace GooglePay.PaymentDataCryptography
 {
-    public class SignatureVerification
+    internal class SignatureVerification
     {
         private readonly Util.IClock _clock = Util.SystemClock.Default;
 
@@ -49,8 +49,6 @@ namespace GooglePay.PaymentDataCryptography
                     return VerifyMessageECv1(keys, signedString, signatureBytes);
                 case "ECv2":
                     return VerifyMessageECv2(keys, signedString, signatureBytes, paymentData.IntermediateSigningKey);
-                case "ECv2SigningOnly":
-                    return VerifyMessageECv2SigningOnly(keys, signedString, signatureBytes, paymentData.IntermediateSigningKey);
                 default:
                     throw new SecurityException($"Unsupported protocol version {paymentData.ProtocolVersion}");
             }
@@ -77,28 +75,6 @@ namespace GooglePay.PaymentDataCryptography
                 throw new SecurityException("Expired signed key found in payload");
             }
             ECPublicKeyParameters signingKey = KeyParser.ParsePublicKeyDer(signedKey.KeyValue);
-            return VerifySignature(signingKey, signedString, signature);
-        }
-        
-        private bool VerifyMessageECv2SigningOnly(IEnumerable<string> keys, byte[] signedString, byte[] signature, Models.SigningKey intermediateSigningKey)
-        {
-            if (!intermediateSigningKey.Signatures.Any(intermediateSignature =>
-                {
-                    byte[] signatureBytes = Base64.Decode(intermediateSignature);
-                    byte[] signedSignatureString = CreateSignedString("GooglePayPasses", "ECv2SigningOnly", intermediateSigningKey.SignedKey);
-                    return keys.Any(key => VerifySignature(KeyParser.ParsePublicKeyDer(key), signedSignatureString, signatureBytes));
-                }))
-            {
-                throw new SecurityException("No valid signing keys found in payload");
-            }
-
-            Models.KeyWithExpiration signedKey = Util.Json.Parse<Models.KeyWithExpiration>(intermediateSigningKey.SignedKey);
-            if (!signedKey.Valid(_clock))
-            {
-                throw new SecurityException("Expired signed key found in payload");
-            }
-            ECPublicKeyParameters signingKey = KeyParser.ParsePublicKeyDer(signedKey.KeyValue);
-            return VerifySignature(signingKey, signedString, signature);
             return VerifySignature(signingKey, signedString, signature);
         }
 
