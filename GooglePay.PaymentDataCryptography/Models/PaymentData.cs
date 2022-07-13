@@ -18,15 +18,15 @@ namespace GooglePay.PaymentDataCryptography.Models
 {
 
     [DataContract]
-    internal class PaymentData
+    public class PaymentData
     {
         [DataMember(Name = "protocolVersion")]
-        internal string ProtocolVersion { get; set; }
+        public string ProtocolVersion { get; set; }
         [DataMember(Name = "signature")]
-        internal string Signature { get; set; }
+        public string Signature { get; set; }
         [DataMember(Name = "signedMessage")]
-        internal string SignedMessage { get; set; }
+        public string SignedMessage { get; set; }
         [DataMember(Name = "intermediateSigningKey")]
-        internal SigningKey IntermediateSigningKey { get; set; }
+        public SigningKey IntermediateSigningKey { get; set; }
     }
 }
