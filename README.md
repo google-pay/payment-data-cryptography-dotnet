@@ -11,13 +11,20 @@ and has no other external dependencies.
 
 ## Sample use
 
-```
+### Decrypt payment messages
+```csharp
 // To use INSTANCE_TEST, set the parameter to true
 var keyProvider = new GooglePay.PaymentDataCryptography.GoogleKeyProvider(false);
 var parser = new GooglePay.PaymentDataCryptography.PaymentMethodTokenRecipient("merchant:YOUR_MERCHANT_ID", keyProvider);
 parser.AddPrivateKey(PrivateKey1);
 parser.AddPrivateKey(PrivateKey2);
 string decryptedMessage = parser.Unseal(encryptedMessage);
+```
+
+### Validate Pass callbacks:
+```csharp
+var passCallbackValidator = new PassCallbackValidator();
+var innerMessage = passCallbackValidator.Verify("YOUR_ISSUER_ID", receivedCallbackMessage);
 ```
 
 ## Disclaimer

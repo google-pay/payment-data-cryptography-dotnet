@@ -21,8 +21,10 @@ namespace GooglePay.PaymentDataCryptography.Models
     {
         [DataMember(Name = "encryptedMessage")]
         internal string EncryptedMessage { get; set; }
+
         [DataMember(Name = "ephemeralPublicKey")]
         internal string EphemeralPublicKey { get; set; }
+        
         [DataMember(Name = "tag")]
         internal string Tag { get; set; }
     }

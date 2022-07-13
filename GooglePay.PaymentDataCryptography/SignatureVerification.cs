@@ -25,7 +25,7 @@ using Org.BouncyCastle.Utilities.Encoders;
 
 namespace GooglePay.PaymentDataCryptography
 {
-    public class SignatureVerification
+    internal class SignatureVerification
     {
         private readonly Util.IClock _clock = Util.SystemClock.Default;
 
@@ -98,7 +98,6 @@ namespace GooglePay.PaymentDataCryptography
                 throw new SecurityException("Expired signed key found in payload");
             }
             ECPublicKeyParameters signingKey = KeyParser.ParsePublicKeyDer(signedKey.KeyValue);
-            return VerifySignature(signingKey, signedString, signature);
             return VerifySignature(signingKey, signedString, signature);
         }
 

@@ -13,7 +13,6 @@
 // limitations under the License.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -21,8 +20,6 @@ using System.Net.Http;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-
-using Org.BouncyCastle.Utilities.Encoders;
 
 namespace GooglePay.PaymentDataCryptography
 {
@@ -34,9 +31,8 @@ namespace GooglePay.PaymentDataCryptography
     /// </summary>
     public class GoogleKeyProvider : ISignatureKeyProvider
     {
-        public const string GoogleProductionKeyUrl = "https://payments.developers.google.com/paymentmethodtoken/keys.json";
-        public const string GoogleTestKeyUrl = "https://payments.developers.google.com/paymentmethodtoken/test/keys.json";
-        public const string GooglePassesUrl = "https://pay.google.com/gp/m/issuer/keys";
+        private const string GoogleProductionKeyUrl = "https://payments.developers.google.com/paymentmethodtoken/keys.json";
+        private const string GoogleTestKeyUrl = "https://payments.developers.google.com/paymentmethodtoken/test/keys.json";
 
         private readonly Util.IClock _clock = Util.SystemClock.Default;
         private readonly string _url;
@@ -48,13 +44,13 @@ namespace GooglePay.PaymentDataCryptography
 
         private readonly string _testData = null;
 
-        /// <summary>
-        /// Use the GoogleProductionKeyUrl or GoogleTestKeyUrl or GooglePassesUrl constants from this class
-        /// based on the environment and keys you require.
-        /// </summary>
-        /// <param name="url"></param>
-        public GoogleKeyProvider(string url) =>
-            _url = url;
+        public GoogleKeyProvider(bool isTest = false) : this(isTest ? GoogleTestKeyUrl : GoogleProductionKeyUrl)
+        {
+
+        }
+
+        internal GoogleKeyProvider(string url)
+            => _url = url;
 
         internal GoogleKeyProvider(string testData, Util.IClock mockClock) {
             _testData = testData;
